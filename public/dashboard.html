@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CYBER X CLOUD // Dashboard</title>
+<link rel="stylesheet" href="/css/main.css">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="loader" id="loader">
+  <div class="loader-logo">CYBER X</div>
+  <div class="loader-ring"></div>
+  <div class="loader-text" id="boot-line">BOOTING CYBER X CLOUD...</div>
+</div>
+
+<canvas id="rain"></canvas><div class="crt"></div>
+<div class="backdrop" id="backdrop"></div>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-name">CYBER X</div>
+      <div class="brand-sub">CLOUD HOSTING PANEL</div>
+    </div>
+
+    <div class="nav-group">Overview</div>
+    <div class="nav active" data-s="dashboard">⌂ Dashboard</div>
+    <div class="nav" data-s="modules">▣ Modules</div>
+
+    <div class="nav-group">Deploy</div>
+    <div class="nav" data-s="deploy">🚀 GitHub Deploy</div>
+    <div class="nav" data-s="apps">📦 My Apps</div>
+    <div class="nav" data-s="upload">⬆ Upload Bot</div>
+
+    <div class="nav-group">Tools</div>
+    <div class="nav" data-s="terminal">&gt;_ Terminal</div>
+    <div class="nav" data-s="filemanager">📁 File Manager</div>
+    <div class="nav" data-s="env">🔐 Environment (.env)</div>
+    <div class="nav" data-s="logs">📜 Live Logs</div>
+    <div class="nav" data-s="shivan">✦ Shivan AI</div>
+
+    <div class="nav-group">Network</div>
+    <div class="nav" data-s="sessions">👥 Bot Sessions</div>
+    <div class="nav" data-s="settings">⚙ Settings</div>
+
+    <div class="nav-group">Account</div>
+    <div class="nav" id="logout-btn">⏻ Logout</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="flex">
+        <div class="mob-btn" id="mob-btn">☰</div>
+        <div class="topbar-title" id="page-title">DASHBOARD</div>
+      </div>
+      <div class="pills">
+        <div class="pill"><span class="dot green"></span> SERVER ONLINE</div>
+        <div class="pill" id="socket-pill"><span class="dot yellow"></span> CONNECTING</div>
+      </div>
+    </div>
+
+    <div class="welcome glass">
+      <div class="scan"></div>
+      <span style="color:var(--phosphor);font-weight:700">root@cyberx:~$</span>
+      <span id="welcome-text"></span><span class="cursor-blink"></span>
+    </div>
+
+    <div class="section active" id="s-dashboard">
+      <div class="stat-grid">
+        <div class="stat-card glass">
+          <div class="lbl">🖥 CPU</div><div class="val" id="cpu-val">--%</div>
+          <div class="bar-track"><div class="bar-fill bar-green" id="cpu-fill" style="width:0%"></div></div>
+        </div>
+        <div class="stat-card glass">
+          <div class="lbl">🧠 RAM</div><div class="val" id="ram-val">--%</div>
+          <div class="bar-track"><div class="bar-fill bar-amber" id="ram-fill" style="width:0%"></div></div>
+        </div>
+        <div class="stat-card glass">
+          <div class="lbl">⏱ Uptime</div><div class="val" id="uptime-val" style="font-size:16px">--</div>
+        </div>
+        <div class="stat-card glass">
+          <div class="lbl">🤖 Bots Linked</div><div class="val" id="bot-count" style="color:var(--phosphor)">0</div>
+        </div>
+      </div>
+
+      <div class="panel glass">
+        <div class="panel-head"><h2>📦 YOUR APPLICATIONS</h2><button class="btn inline" onclick="navTo('deploy')">+ Deploy New</button></div>
+        <table>
+          <thead><tr><th>Name</th><th>Status</th><th>CPU</th><th>RAM</th><th>Restarts</th><th>Actions</th></tr></thead>
+          <tbody id="dash-apps-tbody"><tr><td colspan="6" class="muted">No apps deployed yet.</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="panel glass">
+        <div class="panel-head"><h2>CYBER X CLOUD</h2></div>
+        <p style="font-size:12px">Developed by <span class="glitch-name" data-text="Charles Chukwu">Charles Chukwu</span></p>
+        <p class="muted mt1" style="font-size:11px">Real multi-user hosting · real shell · real deploys · powered by Shivan AI</p>
+      </div>
+    </div>
+
+    <div class="section" id="s-modules">
+      <div class="panel glass" style="text-align:center;padding:24px">
+        <div style="font-family:var(--display);font-size:22px;color:var(--phosphor);text-shadow:0 0 14px rgba(0,255,102,.5);letter-spacing:2px">WELCOME TO CYBER X</div>
+        <div class="muted mt1" style="font-size:11px">Select a module to begin</div>
+      </div>
+      <div class="module-grid">
+        <div class="module-tile glass" onclick="navTo('terminal')">
+          <div class="mt-title">TERMINAL</div>
+          <div class="mt-desc">Real command line — install packages, run scripts</div>
+        </div>
+        <div class="module-tile glass" onclick="navTo('deploy')">
+          <div class="mt-title">DEPLOY</div>
+          <div class="mt-desc">GitHub repo deployment, real build pipeline</div>
+        </div>
+        <div class="module-tile glass" onclick="navTo('env')">
+          <div class="mt-title">SECRETS</div>
+          <div class="mt-desc">Environment variables, .env management</div>
+        </div>
+        <div class="module-tile glass" onclick="navTo('dashboard')">
+          <div class="mt-title">DASHBOARD</div>
+          <div class="mt-desc">System overview and mission control</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="s-terminal">
+      <div class="term-card">
+        <div class="term-titlebar">
+          <div class="term-dots"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span></div>
+          <div class="term-titletext">root@cyberx:~$ shell</div>
+        </div>
+        <div class="term-body" id="term-output">
+          <div class="term-line sys">CYBER X CLOUD — real shell, isolated to your workspace.</div>
+          <div class="term-line sys">Try: npm install, pip install, node -v, ls, mkdir, git clone...</div>
+        </div>
+        <div class="term-input-row">
+          <span class="term-prompt" id="term-prompt">~$</span>
+          <input type="text" class="term-input" id="term-input" autocomplete="off" autocapitalize="off" spellcheck="false">
+        </div>
+        <div class="term-footer">
+          <span>CPU: <span id="term-cpu">--</span>% | MEM: <span id="term-mem">--</span>%</span>
+          <span>connection: established</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="s-deploy">
+      <div class="panel glass">
+        <div class="panel-head"><h2>🚀 DEPLOY FROM GITHUB</h2></div>
+        <div class="field"><label>REPOSITORY URL</label><input type="text" id="deploy-repo" placeholder="https://github.com/username/repo.git"></div>
+        <div class="field"><label>APP NAME</label><input type="text" id="deploy-name" placeholder="my-whatsapp-bot"></div>
+        <div class="field"><label>BRANCH</label><input type="text" id="deploy-branch" placeholder="main" value="main"></div>
+        <button class="btn inline" onclick="startDeploy()">&gt; DEPLOY NOW</button>
+      </div>
+      <div class="panel glass">
+        <div class="panel-head"><h2>BUILD LOGS</h2></div>
+        <div class="term-body" id="deploy-log" style="background:#03110a;border-radius:8px;max-height:380px;overflow-y:auto;font-size:12px">Waiting for deploy...</div>
+      </div>
+    </div>
+
+    <div class="section" id="s-apps">
+      <div class="panel glass">
+        <div class="panel-head"><h2>📦 MY APPLICATIONS</h2><button class="btn inline" onclick="loadApps()">⟳ Refresh</button></div>
+        <div id="apps-list"></div>
+      </div>
+    </div>
+
+    <div class="section" id="s-upload">
+      <div class="panel glass">
+        <div class="panel-head"><h2>⬆ UPLOAD YOUR BOT</h2></div>
+        <p class="muted" style="font-size:12px;margin-bottom:14px">Upload a .zip of your bot's source — extracted into ~/apps</p>
+        <input type="file" id="upload-file" accept=".zip" style="margin-bottom:12px;color:var(--text)">
+        <br><button class="btn inline" onclick="uploadBot()">&gt; UPLOAD & EXTRACT</button>
+        <div class="muted mt1" id="upload-status" style="font-size:12px"></div>
+      </div>
+    </div>
+
+    <div class="section" id="s-filemanager">
+      <div class="panel glass">
+        <div class="panel-head">
+          <h2>📁 FILE MANAGER</h2>
+          <div class="flex"><button class="btn inline" onclick="fmUp()">⬆ Up</button><button class="btn inline" onclick="fmRefresh()">⟳ Refresh</button></div>
+        </div>
+        <div class="muted" id="fm-path" style="font-size:11px;margin-bottom:10px">/</div>
+        <div class="fm-grid" id="fm-grid"></div>
+      </div>
+    </div>
+
+    <div class="section" id="s-env">
+      <div class="panel glass">
+        <div class="panel-head"><h2>🔐 ENVIRONMENT VARIABLES (.env)</h2><button class="btn inline" onclick="saveEnv()">💾 Save</button></div>
+        <p class="muted" style="font-size:11px;margin-bottom:10px">Real .env in your workspace. Your shell and apps read it automatically.</p>
+        <textarea class="env-editor" id="env-editor" placeholder="GROQ_API_KEY=&#10;BOT_NAME=CYBER X"></textarea>
+      </div>
+    </div>
+
+    <div class="section" id="s-logs">
+      <div class="panel glass">
+        <div class="panel-head"><h2>📜 LIVE LOGS</h2><select id="logs-app-select" class="btn inline" style="width:auto" onchange="loadAppLogs()"></select></div>
+        <div class="term-body" id="logs-output" style="background:#03110a;border-radius:8px;max-height:380px;overflow-y:auto;font-size:12px">Select an app above.</div>
+      </div>
+    </div>
+
+    <div class="section" id="s-shivan">
+      <div class="panel glass">
+        <div class="panel-head"><h2>✦ SHIVAN AI AGENT</h2></div>
+        <div class="term-body" id="shivan-chat" style="background:#03110a;border-radius:8px;max-height:340px;overflow-y:auto;font-size:12px">
+          <div class="term-line sys">Shivan: I'm online. Ask me anything about your code or errors.</div>
+        </div>
+        <div class="flex mt2">
+          <input type="text" id="shivan-input" class="term-input" style="background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:6px;padding:9px 12px" placeholder="Ask Shivan...">
+          <button class="btn inline" onclick="shivanSend()">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="s-sessions">
+      <div class="panel glass">
+        <div class="panel-head"><h2>👥 BOT PAIRING SESSIONS</h2></div>
+        <table>
+          <thead><tr><th>#</th><th>Phone</th><th>Linked At</th></tr></thead>
+          <tbody id="sessions-tbody"><tr><td colspan="3" class="muted">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section" id="s-settings">
+      <div class="panel glass">
+        <div class="panel-head"><h2>⚙ SETTINGS</h2></div>
+        <table>
+          <tr><td class="muted">Workspace</td><td>~/ (isolated, yours only)</td></tr>
+          <tr><td class="muted">Theme</td><td>Hacker Terminal (Dark Green)</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>window.CYBERX_CONFIG = { welcomeMessage: 'Welcome to CYBER X server cloud developed by Charles Chukwu' };</script>
+<script src="/js/matrixRain.js"></script>
+<script src="/js/sounds.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/dashboard.js"></script>
+</body>
+</html>

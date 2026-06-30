@@ -1,0 +1,25 @@
+{
+  "name": "cyberx-server",
+  "version": "1.0.0",
+  "description": "CYBER X CLOUD - real multi-user hosting panel, Termux-style",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5",
+    "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "pm2": "^5.4.2",
+    "simple-git": "^3.25.0",
+    "multer": "^1.4.5-lts.1",
+    "extract-zip": "^2.0.1",
+    "archiver": "^7.0.1",
+    "groq-sdk": "^0.5.0",
+    "systeminformation": "^5.22.11"
+  },
+  "engines": { "node": ">=18.0.0" }
+}

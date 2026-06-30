@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CYBER X CLOUD // Link Your Bot</title>
+<link rel="stylesheet" href="/css/main.css">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<canvas id="rain"></canvas><div class="crt"></div>
+<div class="auth-wrap">
+  <div class="auth-card glass" style="width:440px">
+    <h1>CYBER X CLOUD</h1>
+    <div class="auth-tagline">WHATSAPP BOT HOSTING NETWORK</div>
+    <div style="font-family:var(--display);font-size:42px;color:var(--phosphor);text-shadow:0 0 20px rgba(0,255,102,.5);margin:20px 0" id="counter">0</div>
+    <div class="muted" style="font-size:11px;letter-spacing:1px;margin-bottom:20px">BOTS LINKED TO THIS SERVER</div>
+    <a href="/signup" class="btn" style="display:block;text-decoration:none">&gt; CREATE YOUR PANEL</a>
+  </div>
+</div>
+<script src="/js/matrixRain.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+fetch('/api/pairing/count').then(r=>r.json()).then(d=>{ if(d.ok) document.getElementById('counter').textContent = d.count.toLocaleString(); });
+const socket = io();
+socket.on('pairing:update', d => { document.getElementById('counter').textContent = d.count.toLocaleString(); });
+</script>
+</body>
+</html>
