@@ -43,8 +43,6 @@ function navTo(s) {
   if (s === 'dashboard') loadDashApps();
   if (s === 'editor') initEditor();
   if (s === 'shivan') loadShivanWelcome();
-  if (s === 'editor') initEditor();
-  if (s === 'shivan') loadShivanWelcome();
 }
 document.querySelectorAll('.nav[data-s]').forEach(n => n.addEventListener('click', () => navTo(n.dataset.s)));
 document.getElementById('mob-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.add('open'); document.getElementById('backdrop').classList.add('show'); });
@@ -316,25 +314,49 @@ function loadShivanWelcome() {
   }).catch(() => {});
 }
 
-// ===== Monaco Code Editor =====
+// ===== Monaco Code Editor (real VS Code engine, loaded from CDN) =====
 let monacoEditorInstance = null;
 let monacoLoaded = false;
+let monacoLoading = false;
 let currentEditorFile = null;
 
 function initEditor() {
   editorRefreshFileList();
-  if (monacoLoaded) return;
-  monacoLoaded = true;
+
+  if (monacoEditorInstance) {
+    setTimeout(() => monacoEditorInstance.layout(), 50);
+    return;
+  }
+
+  if (monacoLoading) return;
+  monacoLoading = true;
+
+  const container = document.getElementById('monaco-editor-container');
+  container.innerHTML = '<div style="color:#4a8a64;padding:16px;font-size:12px">Loading editor engine...</div>';
+
+  if (typeof require === 'undefined' || !require.config) {
+    container.innerHTML = '<div style="color:#ff3b4e;padding:16px;font-size:12px">Editor engine failed to load from CDN. Check your internet connection and reload the page.</div>';
+    monacoLoading = false;
+    return;
+  }
+
   require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
   require(['vs/editor/editor.main'], function () {
-    monacoEditorInstance = monaco.editor.create(document.getElementById('monaco-editor-container'), {
-      value: '// Select a file above to start editing\\n// Real save writes directly to your workspace on the server',
+    container.innerHTML = '';
+    monacoEditorInstance = monaco.editor.create(container, {
+      value: '// Select a file above to start editing\n// Real save writes directly to your workspace on the server',
       language: 'javascript',
       theme: 'vs-dark',
       fontSize: 13,
       minimap: { enabled: false },
       automaticLayout: true
     });
+    monacoLoaded = true;
+    monacoLoading = false;
+    setTimeout(() => monacoEditorInstance.layout(), 100);
+  }, function (err) {
+    container.innerHTML = '<div style="color:#ff3b4e;padding:16px;font-size:12px">Editor engine failed to load: ' + (err && err.message ? err.message : 'unknown error') + '</div>';
+    monacoLoading = false;
   });
 }
 
@@ -364,6 +386,7 @@ function editorOpenSelected() {
     if (monacoEditorInstance) {
       monaco.editor.setModelLanguage(monacoEditorInstance.getModel(), guessLanguage(filePath));
       monacoEditorInstance.setValue(d.content);
+      setTimeout(() => monacoEditorInstance.layout(), 50);
     }
     document.getElementById('editor-status').textContent = 'Loaded ' + filePath;
   });
@@ -384,5 +407,3 @@ function editorSave() {
     else { document.getElementById('editor-status').textContent = '✗ ' + d.error; S.sndError(); }
   });
 }
-
-// ===== Shivan auto-welcome =====
