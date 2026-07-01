@@ -617,3 +617,25 @@ function typingGameInput(e) {
     if (window.CYBERX_SOUNDS) window.CYBERX_SOUNDS.sndSuccess();
   }
 }
+
+// ===== Bulk app control (red/green/yellow buttons) =====
+function bulkControl(action) {
+  S.sndClick();
+  const labels = { start: 'Starting', stop: 'Stopping', restart: 'Restarting' };
+  fetch(`/api/deploy/apps/all/${action}`, { method: 'POST' })
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) {
+        S.sndSuccess();
+        if (d.affected === 0) {
+          alert('No apps deployed yet — deploy something first.');
+        }
+      } else {
+        S.sndError();
+        alert(d.error || 'Some apps failed to ' + action);
+      }
+      loadDashApps();
+      if (document.getElementById('s-apps').classList.contains('active')) loadApps();
+    })
+    .catch(() => { S.sndError(); alert('Request failed — check connection.'); });
+}

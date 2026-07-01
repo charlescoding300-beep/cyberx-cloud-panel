@@ -71,6 +71,11 @@ router.post('/github', requireAuth, async (req, res) => {
   io.to(room).emit('deploy:complete', result);
 });
 
+router.post('/apps/all/:action', requireAuth, async (req, res) => {
+  const result = await pm2Manager.controlAllApps(req.user.userId, req.params.action);
+  res.json(result);
+});
+
 router.get('/apps', requireAuth, async (req, res) => {
   const result = await pm2Manager.listApps(req.user.userId);
   res.json(result);

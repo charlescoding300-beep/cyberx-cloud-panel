@@ -86,7 +86,15 @@
       </div>
 
       <div class="panel glass">
-        <div class="panel-head"><h2>📦 YOUR APPLICATIONS</h2><button class="btn inline" onclick="navTo('deploy')">+ Deploy New</button></div>
+        <div class="panel-head">
+          <h2>📦 YOUR APPLICATIONS</h2>
+          <div class="flex">
+            <button class="btn inline" style="border-color:#00ff66;color:#00ff66;background:rgba(0,255,102,.1)" onclick="bulkControl('start')" title="Start all apps">🟢 START ALL</button>
+            <button class="btn inline amber" onclick="bulkControl('restart')" title="Restart all apps">🟡 RESTART ALL</button>
+            <button class="btn inline red" onclick="bulkControl('stop')" title="Stop all apps">🔴 STOP ALL</button>
+            <button class="btn inline" onclick="navTo('deploy')">+ Deploy New</button>
+          </div>
+        </div>
         <table>
           <thead><tr><th>Name</th><th>Status</th><th>CPU</th><th>RAM</th><th>Restarts</th><th>Actions</th></tr></thead>
           <tbody id="dash-apps-tbody"><tr><td colspan="6" class="muted">No apps deployed yet.</td></tr></tbody>
