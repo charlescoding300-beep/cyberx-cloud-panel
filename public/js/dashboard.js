@@ -41,6 +41,10 @@ function navTo(s) {
   if (s === 'sessions') loadSessions();
   if (s === 'logs') loadAppsForLogSelect();
   if (s === 'dashboard') loadDashApps();
+  if (s === 'editor') initEditor();
+  if (s === 'shivan') loadShivanWelcome();
+  if (s === 'editor') initEditor();
+  if (s === 'shivan') loadShivanWelcome();
 }
 document.querySelectorAll('.nav[data-s]').forEach(n => n.addEventListener('click', () => navTo(n.dataset.s)));
 document.getElementById('mob-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.add('open'); document.getElementById('backdrop').classList.add('show'); });
@@ -293,3 +297,177 @@ function shivanSend() {
     });
 }
 document.getElementById('shivan-input')?.addEventListener('keydown', e => { if (e.key === 'Enter') shivanSend(); });
+
+// ===== Shivan auto-welcome =====
+let shivanWelcomed = false;
+function loadShivanWelcome() {
+  if (shivanWelcomed) return;
+  shivanWelcomed = true;
+  const chat = document.getElementById('shivan-chat');
+  fetch('/api/ai/welcome').then(r => r.json()).then(d => {
+    if (d.ok) {
+      const line = document.createElement('div');
+      line.className = 'term-line sys';
+      line.textContent = 'Shivan: ' + d.message;
+      chat.appendChild(line);
+      chat.scrollTop = chat.scrollHeight;
+      S.sndBell();
+    }
+  }).catch(() => {});
+}
+
+// ===== Monaco Code Editor =====
+let monacoEditorInstance = null;
+let monacoLoaded = false;
+let currentEditorFile = null;
+
+function initEditor() {
+  editorRefreshFileList();
+  if (monacoLoaded) return;
+  monacoLoaded = true;
+  require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+  require(['vs/editor/editor.main'], function () {
+    monacoEditorInstance = monaco.editor.create(document.getElementById('monaco-editor-container'), {
+      value: '// Select a file above to start editing\\n// Real save writes directly to your workspace on the server',
+      language: 'javascript',
+      theme: 'vs-dark',
+      fontSize: 13,
+      minimap: { enabled: false },
+      automaticLayout: true
+    });
+  });
+}
+
+function guessLanguage(filename) {
+  const ext = filename.split('.').pop().toLowerCase();
+  const map = { js: 'javascript', json: 'json', py: 'python', html: 'html', css: 'css', md: 'markdown', env: 'ini', sh: 'shell', ts: 'typescript' };
+  return map[ext] || 'plaintext';
+}
+
+function editorRefreshFileList(dirPath) {
+  fetch('/api/files/list?path=' + encodeURIComponent(dirPath || '')).then(r => r.json()).then(data => {
+    const sel = document.getElementById('editor-file-select');
+    if (!data.ok) return;
+    const files = data.entries.filter(e => !e.isDirectory);
+    sel.innerHTML = '<option value="">— select a file —</option>' + files.map(f => `<option value="${f.relativePath}">${f.relativePath}</option>`).join('');
+  });
+}
+
+function editorOpenSelected() {
+  const filePath = document.getElementById('editor-file-select').value;
+  if (!filePath) return;
+  S.sndClick();
+  fetch('/api/files/read?path=' + encodeURIComponent(filePath)).then(r => r.json()).then(d => {
+    if (!d.ok) { document.getElementById('editor-status').textContent = '✗ ' + d.error; S.sndError(); return; }
+    currentEditorFile = filePath;
+    document.getElementById('editor-current-file').textContent = filePath;
+    if (monacoEditorInstance) {
+      monaco.editor.setModelLanguage(monacoEditorInstance.getModel(), guessLanguage(filePath));
+      monacoEditorInstance.setValue(d.content);
+    }
+    document.getElementById('editor-status').textContent = 'Loaded ' + filePath;
+  });
+}
+
+function editorSave() {
+  if (!currentEditorFile || !monacoEditorInstance) {
+    document.getElementById('editor-status').textContent = 'No file open to save.';
+    return;
+  }
+  S.sndClick();
+  const content = monacoEditorInstance.getValue();
+  fetch('/api/files/write', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: currentEditorFile, content })
+  }).then(r => r.json()).then(d => {
+    if (d.ok) { document.getElementById('editor-status').textContent = '✓ Saved ' + currentEditorFile; S.sndSuccess(); }
+    else { document.getElementById('editor-status').textContent = '✗ ' + d.error; S.sndError(); }
+  });
+}
+
+// ===== Shivan auto-welcome =====
+let shivanWelcomed = false;
+function loadShivanWelcome() {
+  if (shivanWelcomed) return;
+  shivanWelcomed = true;
+  const chat = document.getElementById('shivan-chat');
+  fetch('/api/ai/welcome').then(r => r.json()).then(d => {
+    if (d.ok) {
+      const line = document.createElement('div');
+      line.className = 'term-line sys';
+      line.textContent = 'Shivan: ' + d.message;
+      chat.appendChild(line);
+      chat.scrollTop = chat.scrollHeight;
+      S.sndBell();
+    }
+  }).catch(() => {});
+}
+
+// ===== Monaco Code Editor =====
+let monacoEditorInstance = null;
+let monacoLoaded = false;
+let currentEditorFile = null;
+
+function initEditor() {
+  editorRefreshFileList();
+  if (monacoLoaded) return;
+  monacoLoaded = true;
+  require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+  require(['vs/editor/editor.main'], function () {
+    monacoEditorInstance = monaco.editor.create(document.getElementById('monaco-editor-container'), {
+      value: '// Select a file above to start editing\\n// Real save writes directly to your workspace on the server',
+      language: 'javascript',
+      theme: 'vs-dark',
+      fontSize: 13,
+      minimap: { enabled: false },
+      automaticLayout: true
+    });
+  });
+}
+
+function guessLanguage(filename) {
+  const ext = filename.split('.').pop().toLowerCase();
+  const map = { js: 'javascript', json: 'json', py: 'python', html: 'html', css: 'css', md: 'markdown', env: 'ini', sh: 'shell', ts: 'typescript' };
+  return map[ext] || 'plaintext';
+}
+
+function editorRefreshFileList(dirPath) {
+  fetch('/api/files/list?path=' + encodeURIComponent(dirPath || '')).then(r => r.json()).then(data => {
+    const sel = document.getElementById('editor-file-select');
+    if (!data.ok) return;
+    const files = data.entries.filter(e => !e.isDirectory);
+    sel.innerHTML = '<option value="">— select a file —</option>' + files.map(f => `<option value="${f.relativePath}">${f.relativePath}</option>`).join('');
+  });
+}
+
+function editorOpenSelected() {
+  const filePath = document.getElementById('editor-file-select').value;
+  if (!filePath) return;
+  S.sndClick();
+  fetch('/api/files/read?path=' + encodeURIComponent(filePath)).then(r => r.json()).then(d => {
+    if (!d.ok) { document.getElementById('editor-status').textContent = '✗ ' + d.error; S.sndError(); return; }
+    currentEditorFile = filePath;
+    document.getElementById('editor-current-file').textContent = filePath;
+    if (monacoEditorInstance) {
+      monaco.editor.setModelLanguage(monacoEditorInstance.getModel(), guessLanguage(filePath));
+      monacoEditorInstance.setValue(d.content);
+    }
+    document.getElementById('editor-status').textContent = 'Loaded ' + filePath;
+  });
+}
+
+function editorSave() {
+  if (!currentEditorFile || !monacoEditorInstance) {
+    document.getElementById('editor-status').textContent = 'No file open to save.';
+    return;
+  }
+  S.sndClick();
+  const content = monacoEditorInstance.getValue();
+  fetch('/api/files/write', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: currentEditorFile, content })
+  }).then(r => r.json()).then(d => {
+    if (d.ok) { document.getElementById('editor-status').textContent = '✓ Saved ' + currentEditorFile; S.sndSuccess(); }
+    else { document.getElementById('editor-status').textContent = '✗ ' + d.error; S.sndError(); }
+  });
+}

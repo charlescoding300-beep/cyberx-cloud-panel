@@ -15,7 +15,7 @@ function resolveSafe(userId, relPath) {
   return target;
 }
 
-const upload = multer({ dest: path.resolve('./data/tmp-uploads') });
+const upload = multer({ dest: path.resolve('./data/tmp-uploads'), limits: { fileSize: 200 * 1024 * 1024 } });
 
 router.get('/list', requireAuth, (req, res) => {
   try {

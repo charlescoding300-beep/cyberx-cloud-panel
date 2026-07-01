@@ -32,6 +32,8 @@ app.use('/api/files', fileRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/pairing', pairingRoutes);
 
+app.get('/ping', (req, res) => res.status(200).json({ ok: true, status: 'alive', timestamp: Date.now() }));
+
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/signup', (req, res) => res.sendFile(path.join(__dirname, 'public', 'signup.html')));
 app.get('/landing', (req, res) => res.sendFile(path.join(__dirname, 'public', 'landing.html')));
@@ -96,5 +98,16 @@ server.listen(PORT, () => {
   }
   if (!process.env.GROQ_API_KEY) {
     console.warn('[CYBER X] WARNING: GROQ_API_KEY not set — Shivan AI will not work until you add it.');
+  }
+
+  const selfUrl = process.env.RENDER_EXTERNAL_URL || process.env.SELF_PING_URL;
+  if (selfUrl) {
+    const PING_INTERVAL_MS = 10 * 60 * 1000;
+    setInterval(() => {
+      fetch(`${selfUrl}/ping`).catch(() => {});
+    }, PING_INTERVAL_MS);
+    console.log(`[CYBER X] Self-ping keep-alive active → ${selfUrl}/ping every 10 min`);
+  } else {
+    console.log('[CYBER X] Self-ping disabled — set SELF_PING_URL in .env to enable on non-Render hosts.');
   }
 });

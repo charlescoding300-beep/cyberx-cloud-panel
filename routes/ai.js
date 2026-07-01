@@ -15,6 +15,15 @@ router.post('/chat', requireAuth, async (req, res) => {
   }
 });
 
+router.get('/welcome', requireAuth, async (req, res) => {
+  try {
+    const message = await shivanAI.getWelcomeMessage(req.user.userId);
+    res.json({ ok: true, message });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 router.post('/apply-fix', requireAuth, (req, res) => {
   const { filePath, content } = req.body;
   if (!filePath || content === undefined) {
