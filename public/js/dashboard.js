@@ -774,6 +774,21 @@ function refreshAlarmToggleUI() {
   btn.className = enabled ? 'btn inline' : 'btn inline red';
 }
 
+function refreshSoundToggleUI() {
+  const btn = document.getElementById('sound-toggle-btn');
+  if (!btn) return;
+  const enabled = S.isSoundEnabled();
+  btn.textContent = enabled ? '🔊 ON — tap to mute' : '🔇 MUTED — tap to unmute';
+  btn.className = enabled ? 'btn inline' : 'btn inline red';
+}
+
+function toggleSoundSetting() {
+  const wasEnabled = S.isSoundEnabled();
+  const nowEnabled = S.toggleSound();
+  if (nowEnabled) S.sndClick(); // play a click ONLY if we just turned sound back on
+  refreshSoundToggleUI();
+}
+
 function toggleAlarmSetting() {
   S.sndClick();
   const currentlyEnabled = isAlarmEnabled();
@@ -786,5 +801,5 @@ function toggleAlarmSetting() {
 const _origNavTo = navTo;
 navTo = function(s) {
   _origNavTo(s);
-  if (s === 'settings') refreshAlarmToggleUI();
+  if (s === 'settings') { refreshAlarmToggleUI(); refreshSoundToggleUI(); }
 };

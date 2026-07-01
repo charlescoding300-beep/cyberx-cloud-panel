@@ -6,7 +6,12 @@ function ctx() {
   return actx;
 }
 
+function isSoundEnabled() {
+  return localStorage.getItem('cyberx_sound_muted') !== 'true';
+}
+
 function tone(freq, duration, type = 'square', startGain = 0.08, glideTo = null) {
+  if (!isSoundEnabled()) return;
   try {
     const c = ctx();
     const o = c.createOscillator();
@@ -61,4 +66,11 @@ function stopAlarm() {
   }
 }
 
-window.CYBERX_SOUNDS = { sndClick, sndKey, sndSuccess, sndError, sndBell, sndBoot, sndTick, sndHonk, startAlarm, stopAlarm };
+function toggleSound() {
+  const currentlyEnabled = isSoundEnabled();
+  localStorage.setItem('cyberx_sound_muted', currentlyEnabled ? 'true' : 'false');
+  if (currentlyEnabled) stopAlarm(); // if muting while alarm is honking, stop it now too
+  return !currentlyEnabled;
+}
+
+window.CYBERX_SOUNDS = { sndClick, sndKey, sndSuccess, sndError, sndBell, sndBoot, sndTick, sndHonk, startAlarm, stopAlarm, isSoundEnabled, toggleSound };
