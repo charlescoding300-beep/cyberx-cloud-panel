@@ -557,91 +557,63 @@ function shivanDeclineFix(btnEl) {
   wrapper.innerHTML = '<div style="font-size:12px;color:var(--dim)">Okay — no changes made.</div>';
 }
 
-// ===== Shivan real-time deploy error detection =====
-let pendingShivanFix = null;
 
-function appendDeployLine(text, cls) {
-  const logEl = document.getElementById('deploy-log');
-  const d = document.createElement('div');
-  d.className = 'term-line ' + cls;
-  d.innerHTML = text;
-  logEl.appendChild(d);
-  logEl.scrollTop = logEl.scrollHeight;
+// ===== Hidden easter egg: hacker typing speed test =====
+const TYPING_PHRASES = [
+  'sudo access granted root shell',
+  'npm install express socket.io',
+  'git clone origin main branch',
+  'pm2 restart cyberx bot process',
+  'grep error logs tail follow',
+  'chmod 755 deploy script sh',
+  'curl https api endpoint json',
+  'ssh keygen ed25519 add agent',
+  'docker build tag cyberx latest',
+  'kill process port 3000 force'
+];
+
+let typingState = { text: '', startTime: null, active: false };
+
+function typingGameStart() {
+  const phrase = TYPING_PHRASES[Math.floor(Math.random() * TYPING_PHRASES.length)];
+  typingState = { text: phrase, startTime: null, active: true };
+  document.getElementById('typing-target').textContent = phrase;
+  document.getElementById('typing-input').value = '';
+  document.getElementById('typing-input').disabled = false;
+  document.getElementById('typing-input').focus();
+  document.getElementById('typing-result').textContent = '';
+  document.getElementById('typing-target').classList.remove('typing-done');
 }
 
-socket.on('shivan:analyzing', (data) => {
-  appendDeployLine(`&gt;&gt;&gt; SHIVAN AI: detected a ${data.label} — analyzing...`, 'sys');
-  S.sndTick();
-});
-
-socket.on('shivan:diagnosis', (data) => {
-  const filePathMatch = data.diagnosis.match(/PROPOSED_FIX:\s*(\S+)/);
-  const proposedFile = filePathMatch && filePathMatch[1] !== 'none' ? filePathMatch[1] : null;
-  const diagnosisText = data.diagnosis.replace(/PROPOSED_FIX:\s*\S+\s*$/, '').trim();
-
-  const logEl = document.getElementById('deploy-log');
-  const box = document.createElement('div');
-  box.style.cssText = 'border:1px solid var(--phosphor);border-radius:8px;padding:12px;margin-top:10px;background:rgba(0,255,102,.05)';
-  box.innerHTML = `
-    <div style="color:var(--phosphor-bright);font-weight:700;margin-bottom:6px">✦ SHIVAN AI — ${data.label}</div>
-    <div style="font-size:12px;margin-bottom:10px;white-space:pre-wrap">${diagnosisText}</div>
-  `;
-
-  if (proposedFile) {
-    box.innerHTML += `
-      <div style="font-size:12px;margin-bottom:8px">Should I fix <strong>${proposedFile}</strong> now?</div>
-      <div class="flex">
-        <button class="btn inline" style="border-color:#00ff66;color:#00ff66" onclick="shivanConfirmFix('${proposedFile}', this)">✓ Yes, fix it</button>
-        <button class="btn inline red" onclick="shivanDeclineFix(this)">✗ No, I'll handle it</button>
-      </div>
-    `;
+function typingGameInput(e) {
+  if (!typingState.active) return;
+  const input = e.target.value;
+  if (typingState.startTime === null && input.length > 0) {
+    typingState.startTime = Date.now();
   }
-
-  logEl.appendChild(box);
-  logEl.scrollTop = logEl.scrollHeight;
-  S.sndBell();
-});
-
-function shivanConfirmFix(filePath, btnEl) {
-  S.sndClick();
-  const wrapper = btnEl.closest('div').parentElement;
-  wrapper.innerHTML = '<div style="font-size:12px;color:var(--phosphor-dim)">Shivan is writing the fix...</div>';
-
-  fetch('/api/ai/chat', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      message: `Give me ONLY the complete corrected content for ${filePath}, nothing else — no explanation, no markdown fences, just the raw file content ready to save directly.`,
-      filePath
-    })
-  }).then(r => r.json()).then(d => {
-    if (!d.ok) {
-      wrapper.innerHTML = `<div style="color:var(--red);font-size:12px">✗ Failed to generate fix: ${d.error}</div>`;
-      S.sndError();
-      return;
+  const target = typingState.text;
+  const targetEl = document.getElementById('typing-target');
+  let html = '';
+  for (let i = 0; i < target.length; i++) {
+    if (i < input.length) {
+      html += input[i] === target[i]
+        ? `<span style="color:#00ff66">${target[i]}</span>`
+        : `<span style="color:#ff3b4e;text-decoration:underline">${target[i]}</span>`;
+    } else {
+      html += `<span style="color:#4a8a64">${target[i]}</span>`;
     }
-    let content = d.reply.trim();
-    content = content.replace(/^```[\w]*\n?/, '').replace(/```$/, '');
-
-    fetch('/api/ai/apply-fix', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filePath, content })
-    }).then(r => r.json()).then(applyResult => {
-      if (applyResult.ok) {
-        wrapper.innerHTML = `<div style="color:var(--phosphor);font-size:12px">✓ Fixed ${filePath} — redeploy to apply.</div>`;
-        S.sndSuccess();
-      } else {
-        wrapper.innerHTML = `<div style="color:var(--red);font-size:12px">✗ ${applyResult.error}</div>`;
-        S.sndError();
-      }
-    });
-  }).catch(() => {
-    wrapper.innerHTML = '<div style="color:var(--red);font-size:12px">✗ Request failed</div>';
-    S.sndError();
-  });
-}
-
-function shivanDeclineFix(btnEl) {
-  S.sndClick();
-  const wrapper = btnEl.closest('div').parentElement;
-  wrapper.innerHTML = '<div style="font-size:12px;color:var(--dim)">Okay — no changes made.</div>';
+  }
+  targetEl.innerHTML = html;
+  if (input === target) {
+    typingState.active = false;
+    const elapsedMs = Date.now() - typingState.startTime;
+    const elapsedMin = elapsedMs / 60000;
+    const words = target.split(' ').length;
+    const wpm = Math.round(words / elapsedMin);
+    document.getElementById('typing-input').disabled = true;
+    document.getElementById('typing-result').innerHTML =
+      `<span class="glow-text">✓ ${wpm} WPM</span> — ${(elapsedMs / 1000).toFixed(2)}s`;
+    targetEl.classList.add('typing-done');
+    if (window.CYBERX_SOUNDS) window.CYBERX_SOUNDS.sndSuccess();
+  }
 }

@@ -199,3 +199,5 @@ textarea.env-editor{width:100%;min-height:200px;background:#03110a;border:1px so
   border-radius:8px;color:var(--text);font-family:var(--mono);font-size:12px;padding:12px;outline:none;resize:vertical}
 
 .typing-done { box-shadow: 0 0 16px rgba(0,255,102,.3); border-color: var(--phosphor) !important; }
+
+.typing-done { box-shadow: 0 0 16px rgba(0,255,102,.3); border-color: var(--phosphor) !important; }
