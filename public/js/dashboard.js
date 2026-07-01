@@ -556,3 +556,92 @@ function shivanDeclineFix(btnEl) {
   const wrapper = btnEl.closest('div').parentElement;
   wrapper.innerHTML = '<div style="font-size:12px;color:var(--dim)">Okay — no changes made.</div>';
 }
+
+// ===== Shivan real-time deploy error detection =====
+let pendingShivanFix = null;
+
+function appendDeployLine(text, cls) {
+  const logEl = document.getElementById('deploy-log');
+  const d = document.createElement('div');
+  d.className = 'term-line ' + cls;
+  d.innerHTML = text;
+  logEl.appendChild(d);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+socket.on('shivan:analyzing', (data) => {
+  appendDeployLine(`&gt;&gt;&gt; SHIVAN AI: detected a ${data.label} — analyzing...`, 'sys');
+  S.sndTick();
+});
+
+socket.on('shivan:diagnosis', (data) => {
+  const filePathMatch = data.diagnosis.match(/PROPOSED_FIX:\s*(\S+)/);
+  const proposedFile = filePathMatch && filePathMatch[1] !== 'none' ? filePathMatch[1] : null;
+  const diagnosisText = data.diagnosis.replace(/PROPOSED_FIX:\s*\S+\s*$/, '').trim();
+
+  const logEl = document.getElementById('deploy-log');
+  const box = document.createElement('div');
+  box.style.cssText = 'border:1px solid var(--phosphor);border-radius:8px;padding:12px;margin-top:10px;background:rgba(0,255,102,.05)';
+  box.innerHTML = `
+    <div style="color:var(--phosphor-bright);font-weight:700;margin-bottom:6px">✦ SHIVAN AI — ${data.label}</div>
+    <div style="font-size:12px;margin-bottom:10px;white-space:pre-wrap">${diagnosisText}</div>
+  `;
+
+  if (proposedFile) {
+    box.innerHTML += `
+      <div style="font-size:12px;margin-bottom:8px">Should I fix <strong>${proposedFile}</strong> now?</div>
+      <div class="flex">
+        <button class="btn inline" style="border-color:#00ff66;color:#00ff66" onclick="shivanConfirmFix('${proposedFile}', this)">✓ Yes, fix it</button>
+        <button class="btn inline red" onclick="shivanDeclineFix(this)">✗ No, I'll handle it</button>
+      </div>
+    `;
+  }
+
+  logEl.appendChild(box);
+  logEl.scrollTop = logEl.scrollHeight;
+  S.sndBell();
+});
+
+function shivanConfirmFix(filePath, btnEl) {
+  S.sndClick();
+  const wrapper = btnEl.closest('div').parentElement;
+  wrapper.innerHTML = '<div style="font-size:12px;color:var(--phosphor-dim)">Shivan is writing the fix...</div>';
+
+  fetch('/api/ai/chat', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: `Give me ONLY the complete corrected content for ${filePath}, nothing else — no explanation, no markdown fences, just the raw file content ready to save directly.`,
+      filePath
+    })
+  }).then(r => r.json()).then(d => {
+    if (!d.ok) {
+      wrapper.innerHTML = `<div style="color:var(--red);font-size:12px">✗ Failed to generate fix: ${d.error}</div>`;
+      S.sndError();
+      return;
+    }
+    let content = d.reply.trim();
+    content = content.replace(/^```[\w]*\n?/, '').replace(/```$/, '');
+
+    fetch('/api/ai/apply-fix', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filePath, content })
+    }).then(r => r.json()).then(applyResult => {
+      if (applyResult.ok) {
+        wrapper.innerHTML = `<div style="color:var(--phosphor);font-size:12px">✓ Fixed ${filePath} — redeploy to apply.</div>`;
+        S.sndSuccess();
+      } else {
+        wrapper.innerHTML = `<div style="color:var(--red);font-size:12px">✗ ${applyResult.error}</div>`;
+        S.sndError();
+      }
+    });
+  }).catch(() => {
+    wrapper.innerHTML = '<div style="color:var(--red);font-size:12px">✗ Request failed</div>';
+    S.sndError();
+  });
+}
+
+function shivanDeclineFix(btnEl) {
+  S.sndClick();
+  const wrapper = btnEl.closest('div').parentElement;
+  wrapper.innerHTML = '<div style="font-size:12px;color:var(--dim)">Okay — no changes made.</div>';
+}
