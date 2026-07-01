@@ -40,4 +40,25 @@ function sndBoot() {
 }
 function sndTick() { tone(500, 0.02, 'square', 0.02); }
 
-window.CYBERX_SOUNDS = { sndClick, sndKey, sndSuccess, sndError, sndBell, sndBoot, sndTick };
+// Crash alarm — repeating honk pattern, distinct from the single-tone
+// sndError so a real crash is unmistakable from a normal failed command.
+let alarmInterval = null;
+
+function sndHonk() {
+  tone(320, 0.25, 'sawtooth', 0.12, 200);
+}
+
+function startAlarm() {
+  if (alarmInterval) return; // already running
+  sndHonk();
+  alarmInterval = setInterval(sndHonk, 500);
+}
+
+function stopAlarm() {
+  if (alarmInterval) {
+    clearInterval(alarmInterval);
+    alarmInterval = null;
+  }
+}
+
+window.CYBERX_SOUNDS = { sndClick, sndKey, sndSuccess, sndError, sndBell, sndBoot, sndTick, sndHonk, startAlarm, stopAlarm };

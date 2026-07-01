@@ -201,3 +201,34 @@ textarea.env-editor{width:100%;min-height:200px;background:#03110a;border:1px so
 .typing-done { box-shadow: 0 0 16px rgba(0,255,102,.3); border-color: var(--phosphor) !important; }
 
 .typing-done { box-shadow: 0 0 16px rgba(0,255,102,.3); border-color: var(--phosphor) !important; }
+
+/* ===== Crash alarm overlay ===== */
+#crash-alarm-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: rgba(255, 0, 30, 0.25);
+  animation: crash-flash 0.5s steps(1) infinite;
+}
+#crash-alarm-overlay.active { display: block; }
+@keyframes crash-flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+#crash-alarm-banner {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 10000;
+  background: #ff3b4e;
+  color: #fff;
+  text-align: center;
+  padding: 10px;
+  font-family: var(--display);
+  font-size: 13px;
+  letter-spacing: 2px;
+  cursor: pointer;
+}
+#crash-alarm-banner.active { display: block; animation: crash-flash 0.5s steps(1) infinite; }

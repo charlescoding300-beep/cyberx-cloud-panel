@@ -184,6 +184,7 @@ function appAction(name, action) {
 }
 function loadDashApps() {
   fetch('/api/deploy/apps').then(r => r.json()).then(data => {
+    if (data.ok && data.apps.length) checkForCrashes(data.apps);
     const tbody = document.getElementById('dash-apps-tbody');
     if (!data.ok || !data.apps.length) { tbody.innerHTML = '<tr><td colspan="6" class="muted">No apps deployed yet.</td></tr>'; return; }
     tbody.innerHTML = data.apps.map(a => `
@@ -728,3 +729,62 @@ function shivanDeclineFix(btnEl) {
   const wrapper = btnEl.closest('div').parentElement;
   wrapper.innerHTML = '<div style="font-size:12px;color:var(--dim)">Okay — no changes made.</div>';
 }
+
+// ===== Crash alarm system =====
+function isAlarmEnabled() {
+  return localStorage.getItem('cyberx_alarm_disabled') !== 'true';
+}
+
+function triggerCrashAlarm() {
+  if (!isAlarmEnabled()) return;
+  document.getElementById('crash-alarm-overlay').classList.add('active');
+  document.getElementById('crash-alarm-banner').classList.add('active');
+  if (S.startAlarm) S.startAlarm();
+}
+
+function dismissAlarm() {
+  document.getElementById('crash-alarm-overlay').classList.remove('active');
+  document.getElementById('crash-alarm-banner').classList.remove('active');
+  if (S.stopAlarm) S.stopAlarm();
+}
+
+// Hook into existing deploy failure event
+socket.on('deploy:complete', (result) => {
+  if (!result.ok) triggerCrashAlarm();
+});
+
+// Also trigger if an app goes offline unexpectedly (checked via periodic app poll)
+let lastKnownAppStatuses = {};
+function checkForCrashes(apps) {
+  apps.forEach(a => {
+    const prevStatus = lastKnownAppStatuses[a.name];
+    if (prevStatus === 'online' && a.status !== 'online') {
+      triggerCrashAlarm();
+    }
+    lastKnownAppStatuses[a.name] = a.status;
+  });
+}
+
+// ===== Alarm settings toggle =====
+function refreshAlarmToggleUI() {
+  const btn = document.getElementById('alarm-toggle-btn');
+  if (!btn) return;
+  const enabled = isAlarmEnabled();
+  btn.textContent = enabled ? '🔔 ON — tap to disable' : '🔕 OFF — tap to enable';
+  btn.className = enabled ? 'btn inline' : 'btn inline red';
+}
+
+function toggleAlarmSetting() {
+  S.sndClick();
+  const currentlyEnabled = isAlarmEnabled();
+  localStorage.setItem('cyberx_alarm_disabled', currentlyEnabled ? 'true' : 'false');
+  if (!currentlyEnabled) dismissAlarm(); // if turning off while active, silence it now
+  refreshAlarmToggleUI();
+}
+
+// Refresh the toggle button whenever Settings is opened
+const _origNavTo = navTo;
+navTo = function(s) {
+  _origNavTo(s);
+  if (s === 'settings') refreshAlarmToggleUI();
+};

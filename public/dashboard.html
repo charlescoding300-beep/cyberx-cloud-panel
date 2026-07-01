@@ -16,6 +16,8 @@
 
 <canvas id="rain"></canvas><div class="crt"></div>
 <div class="backdrop" id="backdrop"></div>
+  <div id="crash-alarm-overlay"></div>
+  <div id="crash-alarm-banner" onclick="dismissAlarm()">⚠ APPLICATION CRASH DETECTED — TAP TO DISMISS ⚠</div>
 
 <div class="shell">
   <aside class="sidebar" id="sidebar">
@@ -241,6 +243,10 @@
           <tr><td class="muted">Workspace</td><td>~/ (isolated, yours only)</td></tr>
           <tr><td class="muted">Theme</td><td>Hacker Terminal (Dark Green)</td></tr>
         </table>
+        <div class="mt2 flex">
+          <span class="muted" style="font-size:12px">Crash Alarm (flashing red + sound)</span>
+          <button class="btn inline" id="alarm-toggle-btn" onclick="toggleAlarmSetting()">Loading...</button>
+        </div>
       </div>
       <div class="panel glass">
         <div class="panel-head"><h2>&gt;_ SYSTEM DIAGNOSTIC (typing test)</h2></div>
