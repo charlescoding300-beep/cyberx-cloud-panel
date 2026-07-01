@@ -407,3 +407,63 @@ function editorSave() {
     else { document.getElementById('editor-status').textContent = '✗ ' + d.error; S.sndError(); }
   });
 }
+
+// ===== Hidden easter egg: hacker typing speed test =====
+const TYPING_PHRASES = [
+  'sudo access granted root shell',
+  'npm install express socket.io',
+  'git clone origin main branch',
+  'pm2 restart cyberx bot process',
+  'grep error logs tail follow',
+  'chmod 755 deploy script sh',
+  'curl https api endpoint json',
+  'ssh keygen ed25519 add agent',
+  'docker build tag cyberx latest',
+  'kill process port 3000 force'
+];
+
+let typingState = { text: '', startTime: null, active: false };
+
+function typingGameStart() {
+  const phrase = TYPING_PHRASES[Math.floor(Math.random() * TYPING_PHRASES.length)];
+  typingState = { text: phrase, startTime: null, active: true };
+  document.getElementById('typing-target').textContent = phrase;
+  document.getElementById('typing-input').value = '';
+  document.getElementById('typing-input').disabled = false;
+  document.getElementById('typing-input').focus();
+  document.getElementById('typing-result').textContent = '';
+  document.getElementById('typing-target').classList.remove('typing-done');
+}
+
+function typingGameInput(e) {
+  if (!typingState.active) return;
+  const input = e.target.value;
+  if (typingState.startTime === null && input.length > 0) {
+    typingState.startTime = Date.now();
+  }
+  const target = typingState.text;
+  const targetEl = document.getElementById('typing-target');
+  let html = '';
+  for (let i = 0; i < target.length; i++) {
+    if (i < input.length) {
+      html += input[i] === target[i]
+        ? `<span style="color:#00ff66">${target[i]}</span>`
+        : `<span style="color:#ff3b4e;text-decoration:underline">${target[i]}</span>`;
+    } else {
+      html += `<span style="color:#4a8a64">${target[i]}</span>`;
+    }
+  }
+  targetEl.innerHTML = html;
+  if (input === target) {
+    typingState.active = false;
+    const elapsedMs = Date.now() - typingState.startTime;
+    const elapsedMin = elapsedMs / 60000;
+    const words = target.split(' ').length;
+    const wpm = Math.round(words / elapsedMin);
+    document.getElementById('typing-input').disabled = true;
+    document.getElementById('typing-result').innerHTML =
+      `<span class="glow-text">✓ ${wpm} WPM</span> — ${(elapsedMs / 1000).toFixed(2)}s`;
+    targetEl.classList.add('typing-done');
+    if (window.CYBERX_SOUNDS) window.CYBERX_SOUNDS.sndSuccess();
+  }
+}

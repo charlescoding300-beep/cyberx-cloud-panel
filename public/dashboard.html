@@ -234,6 +234,16 @@
           <tr><td class="muted">Theme</td><td>Hacker Terminal (Dark Green)</td></tr>
         </table>
       </div>
+      <div class="panel glass">
+        <div class="panel-head"><h2>&gt;_ SYSTEM DIAGNOSTIC (typing test)</h2></div>
+        <p class="muted" style="font-size:11px;margin-bottom:12px">Test your reflexes, operator.</p>
+        <div id="typing-target" style="font-family:var(--mono);font-size:15px;letter-spacing:1px;background:#03110a;border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;min-height:24px">Click START to begin</div>
+        <input type="text" id="typing-input" oninput="typingGameInput(event)" disabled autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type here once started..." style="width:100%;padding:10px 12px;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;margin-bottom:10px">
+        <div class="flex">
+          <button class="btn inline" onclick="typingGameStart()">&gt; START</button>
+          <span id="typing-result" style="font-size:13px"></span>
+        </div>
+      </div>
     </div>
 
   </main>
